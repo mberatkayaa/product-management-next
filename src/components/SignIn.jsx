@@ -9,6 +9,7 @@ import { mdiEye, mdiEyeOff } from "@mdi/js";
 
 import ErrorComponent from "./ErrorComponent";
 import Redirect from "./Redirect";
+import Loading from "./Loading";
 
 function SignIn() {
   const usernameEl = useRef();
@@ -16,6 +17,7 @@ function SignIn() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const { data: session } = useSession();
@@ -23,6 +25,7 @@ function SignIn() {
   const submitHandler = async (event) => {
     event.preventDefault();
     try {
+      setLoading(true);
       const response = await signIn("credentials", {
         username: usernameEl.current.value,
         password: passwordEl.current.value,
@@ -31,9 +34,11 @@ function SignIn() {
       if (!response || !response.ok) {
         throw new Error("Wrong username or password!");
       }
+      setLoading(false);
       setDone(true);
       setError(null);
     } catch (err) {
+      setLoading(false);
       setDone(false);
       setError(err.message);
     }
@@ -41,6 +46,7 @@ function SignIn() {
 
   return (
     <>
+      <Loading show={loading} title={"Signing in..."} />
       <ErrorComponent error={error} onResolve={setError.bind(this, null)} />
       <Redirect route={"/admin"} show={done || session} text={"Directing to dashboard..."} title={"Signed In"} />
       <form onSubmit={submitHandler}>
@@ -64,14 +70,14 @@ function SignIn() {
               type={showPassword ? "text" : "password"}
               className="border-2 border-solid border-teal-800 rounded-[4px] outline-0 focus:border-teal-600 px-2 py-1 font-[inherit] pr-7"
             />
-            <button
+            <span
               className="absolute bottom-[6px] right-[6px] text-teal-800"
               onClick={setShowPassword.bind(this, (prev) => {
                 return !prev;
               })}
             >
               <Icon path={showPassword ? mdiEyeOff : mdiEye} size={1} />
-            </button>
+            </span>
           </div>
           <button type="submit" className="bg-teal-800 text-white py-3 mt-6 hover:bg-teal-700 active:bg-teal-600">
             Sign In
