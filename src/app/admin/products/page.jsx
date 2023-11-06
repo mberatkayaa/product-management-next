@@ -13,7 +13,7 @@ async function ProductsPage() {
   const { error, message, body: products } = response;
   return (
     <>
-      {error && <ErrorComponent error={message} title={"Error"} />}
+      {error && <ErrorComponent error={message} title={"Error"} callInvoker={true} response={response} />}
       <div className="flex items-center gap-4 text-4xl mb-10">
         <h1>Products</h1>
         <Link

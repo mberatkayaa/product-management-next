@@ -34,7 +34,7 @@ function DeleteButton({ title, text, icon, confirmText, cancelText, endPoint, re
         {children}
       </button>
       {state.response && <HookInvoker response={state.response} />}
-      {state.error && <Swal title="Oops!" text={state.error} show={true} icon="error" onResolve={setError.bind(this, null)} />}
+      {state.error && <Swal title="Oops!" text={state.error} show={true} icon="error" onResolve={() => dispatch({ type: "RESET" })} />}
       <Redirect show={state.success && redirect} title={"Deleted!"} text={"Redirecting..."} route={redirect} />
       <Loading show={state.loading} title={"Deleting..."} text={"Please wait while saving changes..."} />
       {showConfirmation && (

@@ -19,16 +19,18 @@ async function ProductDetailsPage({ params }) {
 
   let response = await serverSideFetch({ endPoint: `/admin/products/${params.prodId}` });
   productError = response.error;
+  productErrorMessage = response.message;
   product = response.body;
 
   if (!productError && product) {
     response = await serverSideFetch({ endPoint: `/admin/products/${params.prodId}/movements` });
     movementsError = response.error;
+    movementsErrorMessage = response.message;
     movements = response.body;
   }
 
   if (productError) {
-    return <ErrorComponent error={productErrorMessage} title={"Error"} />;
+    return <ErrorComponent error={productErrorMessage} title={"Error"} callInvoker={true} response={response} />;
   }
   return (
     <>

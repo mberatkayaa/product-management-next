@@ -35,10 +35,26 @@ export const serverSideFetch = async ({
     headers["Authorization"] = `Basic ${btoa(JSON.stringify(session))}`;
   }
 
-  return await clientSideFetch({ endPoint, method, headers, body, bodyFn, errorFn, fetchFn, processDataFn });
+  errorFn =
+    errorFn ||
+    ((data) => {
+      return data.result.message;
+    });
+
+  return await clientSideFetch({ fromServer: true, endPoint, method, headers, body, bodyFn, errorFn, fetchFn, processDataFn });
 };
 
-export const clientSideFetch = async ({ endPoint, method = "GET", headers, body, fetchFn, processDataFn, bodyFn, errorFn }) => {
+export const clientSideFetch = async ({
+  endPoint,
+  method = "GET",
+  headers,
+  body,
+  fetchFn,
+  processDataFn,
+  bodyFn,
+  errorFn,
+  fromServer = false,
+}) => {
   let buffer;
 
   headers = headers || {
@@ -53,7 +69,10 @@ export const clientSideFetch = async ({ endPoint, method = "GET", headers, body,
   } else {
     buffer = await _try(async () => await fetch(endPoint, options));
   }
-  if (buffer.isError || !buffer.ok) {
+  // if (buffer.isError || !buffer.ok) {
+  //   return rb.reset().error("Fetch Error", buffer.payload).getObj();
+  // }
+  if (buffer.isError) {
     return rb.reset().error("Fetch Error", buffer.payload).getObj();
   }
   const response = buffer;
@@ -82,7 +101,7 @@ export const clientSideFetch = async ({ endPoint, method = "GET", headers, body,
   if (errorFn) {
     message = errorFn(data);
   } else {
-    message = data.result.message;
+    message = data.message;
   }
   return rb.reset().error(message).body(_body).getObj();
 };
@@ -124,9 +143,9 @@ export const getDefaultReducer = () => {
       case "FETCH_DONE":
         return { ...state, loading: false, error: null, success: true, response: action.payload };
       case "FETCH_ERROR":
-        return { ...state, loading: false, error: action.message, success: false, response: action.payload };
+        return { ...state, loading: false, error: action.message, success: false, storedResponse: action.payload };
       case "RESET":
-        return { ...initialState };
+        return { ...initialState, response: state.storedResponse };
       default:
         return state;
     }

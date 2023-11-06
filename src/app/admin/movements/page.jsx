@@ -12,7 +12,7 @@ async function MovementsPage() {
       <div className="flex items-center gap-4 text-4xl mb-10">
         <h1>Movements</h1>
       </div>
-      {error && <ErrorComponent error={message} title={"Error"} />}
+      {error && <ErrorComponent error={message} title={"Error"} callInvoker={true} response={response} />}
       {movements && movements.length > 0 && (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
           {movements.map((x) => (

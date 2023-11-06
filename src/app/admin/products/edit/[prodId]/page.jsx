@@ -9,7 +9,7 @@ async function EditProductPage({ params }) {
 
   return (
     <>
-      {error && <ErrorComponent error={message} title={"Error"} />}
+      {error && <ErrorComponent error={message} title={"Error"} callInvoker={true} response={response} />}
       {product && <ProductForm initialValue={product} redirect={`/admin/products/${params.prodId}`} />}
     </>
   );
