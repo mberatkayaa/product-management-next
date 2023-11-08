@@ -11,6 +11,7 @@ import { serverSideFetch } from "@/misc/fetchOperations";
 async function ProductsPage() {
   const response = await serverSideFetch({ endPoint: "/admin/products" });
   const { error, message, body: products } = response;
+ 
   return (
     <>
       {error && <ErrorComponent error={message} title={"Error"} callInvoker={true} response={response} />}
@@ -28,7 +29,7 @@ async function ProductsPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
           {products.map((x) => (
             <Link key={x._id} href={`/admin/products/${x._id}`}>
-              <ProductCard product={x} />
+              {/* <ProductCard product={x} /> */}
             </Link>
           ))}
         </div>

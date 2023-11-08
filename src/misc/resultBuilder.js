@@ -18,7 +18,7 @@ export default class ResultBuilder {
     this.obj.error = true;
     this.obj.ok = false;
     this.obj.message = message;
-    this.obj.errorObj = errorObj;
+    // this.obj.errorObj = errorObj;
     return this;
   };
 
