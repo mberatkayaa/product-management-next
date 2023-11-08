@@ -29,7 +29,7 @@ async function ProductsPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
           {products.map((x) => (
             <Link key={x._id} href={`/admin/products/${x._id}`}>
-              {/* <ProductCard product={x} /> */}
+              <ProductCard product={x} />
             </Link>
           ))}
         </div>
