@@ -16,6 +16,7 @@ export const serverSideFetch = async ({
   processDataFn,
   bodyFn,
   errorFn,
+  timeout = 7000,
 }) => {
   let buffer;
   let session;
@@ -41,7 +42,7 @@ export const serverSideFetch = async ({
       return data.result.message;
     });
 
-  return await clientSideFetch({ fromServer: true, endPoint, method, headers, body, bodyFn, errorFn, fetchFn, processDataFn });
+  return await clientSideFetch({ endPoint, method, headers, body, bodyFn, errorFn, fetchFn, processDataFn, timeout });
 };
 
 export const clientSideFetch = async ({
@@ -53,57 +54,72 @@ export const clientSideFetch = async ({
   processDataFn,
   bodyFn,
   errorFn,
-  fromServer = false,
+  timeout = 7000,
 }) => {
-  let buffer;
+  const result = await Promise.race([
+    new Promise(async (resolve, reject) => {
+      resolve(
+        (async () => {
+          let buffer;
 
-  headers = headers || {
-    "Content-Type": "application/json",
-  };
+          headers = headers || {
+            "Content-Type": "application/json",
+          };
 
-  const options = { method, headers };
-  if (body) options.body = body;
+          const options = { method, headers };
+          if (body) options.body = body;
 
-  if (fetchFn) {
-    buffer = await _try(async () => fetchFn());
-  } else {
-    buffer = await _try(async () => await fetch(endPoint, options));
-  }
-  // if (buffer.isError || !buffer.ok) {
-  //   return rb.reset().error("Fetch Error", buffer.payload).getObj();
-  // }
-  if (buffer.isError) {
-    return rb.reset().error("Fetch Error", buffer.payload).getObj();
-  }
-  const response = buffer;
+          if (fetchFn) {
+            buffer = await _try(async () => fetchFn());
+          } else {
+            buffer = await _try(async () => await fetch(endPoint, options));
+          }
+          // if (buffer.isError || !buffer.ok) {
+          //   return rb.reset().error("Fetch Error", buffer.payload).getObj();
+          // }
+          if (buffer.isError) {
+            return rb.reset().error("Fetch Error", buffer.payload).getObj();
+          }
+          const response = buffer;
 
-  if (processDataFn) {
-    buffer = await _try(async () => await processDataFn(response));
-  } else {
-    buffer = await _try(async () => await response.json());
-  }
-  if (buffer.isError) {
-    return rb.reset().error("Data Error", buffer.payload).getObj();
-  }
-  const data = buffer;
+          if (processDataFn) {
+            buffer = await _try(async () => await processDataFn(response));
+          } else {
+            buffer = await _try(async () => await response.json());
+          }
+          if (buffer.isError) {
+            return rb.reset().error("Data Error", buffer.payload).getObj();
+          }
+          const data = buffer;
 
-  let _body;
-  let message;
-  if (bodyFn) {
-    _body = bodyFn(data);
-  } else {
-    _body = data.body;
-  }
+          let _body;
+          let message;
+          if (bodyFn) {
+            _body = bodyFn(data);
+          } else {
+            _body = data.body;
+          }
 
-  if (response.ok) {
-    return rb.reset().ok().body(_body).getObj();
-  }
-  if (errorFn) {
-    message = errorFn(data);
-  } else {
-    message = data.message;
-  }
-  return rb.reset().error(message).body(_body).getObj();
+          if (response.ok) {
+            return rb.reset().ok().body(_body).getObj();
+          }
+          if (errorFn) {
+            message = errorFn(data);
+          } else {
+            message = data.message;
+          }
+          return rb.reset().error(message).body(_body).getObj();
+        })()
+      );
+    }),
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(rb.reset().error("Request has been timed out!").getObj());
+      }, timeout);
+    }),
+  ]);
+
+  return result;
 };
 
 export const handleClientSideFetch = async ({
