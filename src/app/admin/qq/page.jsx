@@ -17,12 +17,11 @@ async function ProductsPage() {
     });
     const { error, message, body: products } = response;
   } catch (err) {
-    return <p>{err.message}</p>;
+    return <p>CATCH</p>;
   }
 
   return (
     <>
-      {error && <ErrorComponent error={message} title={"Error"} callInvoker={true} response={response} />}
       <div className="flex items-center gap-4 text-4xl mb-10">
         <h1>Products</h1>
         <Link
@@ -33,15 +32,6 @@ async function ProductsPage() {
           <Icon path={mdiPlus} size={1.5} />
         </Link>
       </div>
-      {products && products.length > 0 && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
-          {products.map((x) => (
-            <Link key={x._id} href={`/admin/products/${x._id}`}>
-              <ProductCard product={x} />
-            </Link>
-          ))}
-        </div>
-      )}
     </>
   );
 }
